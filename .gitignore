@@ -1,0 +1,15 @@
+.idea/
+.github/
+
+__pycache__/
+*.pyc
+*.pyo
+
+build/
+dist/
+
+*.obj
+*.o
+*.pyd
+*.dll
+*.so
