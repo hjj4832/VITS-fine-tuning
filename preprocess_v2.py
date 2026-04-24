@@ -18,20 +18,19 @@ if __name__ == "__main__":
     elif args.languages == "C":
         langs = ["[ZH]"]
     new_annos = []
-    # Source 1: transcribed short audios
+    
     # 来源1：记录短音频
     if os.path.exists("short_character_anno.txt"):
         with open("short_character_anno.txt", 'r', encoding='utf-8') as f:
             short_character_anno = f.readlines()
             new_annos += short_character_anno
-    # Source 2: transcribed long audio segments
+
     # 来源2：记录长音频
     if os.path.exists("./long_character_anno.txt"):
         with open("./long_character_anno.txt", 'r', encoding='utf-8') as f:
             long_character_anno = f.readlines()
             new_annos += long_character_anno
 
-    # Get all speaker names
     # 获取所有说话人名字
     speakers = []
     for line in new_annos:
@@ -39,12 +38,12 @@ if __name__ == "__main__":
         if speaker not in speakers:
             speakers.append(speaker)
     assert (len(speakers) != 0), "No audio file found. Please check your uploaded file structure."
-    # Source 3 (Optional): sampled audios as extra training helpers
+
     # 来源3（可选）：采样音频作为额外辅助
     if args.add_auxiliary_data:
         with open("./sampled_audio4ft.txt", 'r', encoding='utf-8') as f:
             old_annos = f.readlines()
-        # filter old_annos according to supported languages
+        # 根据支持语言筛选老发音
         filtered_old_annos = []
         for line in old_annos:
             for lang in langs:
@@ -57,40 +56,33 @@ if __name__ == "__main__":
                 speakers.append(speaker)
         num_old_voices = len(old_annos)
         num_new_voices = len(new_annos)
-        # STEP 1: balance number of new & old voices
+
+        # 平衡新老声音数量
         cc_duplicate = num_old_voices // num_new_voices
         if cc_duplicate == 0:
             cc_duplicate = 1
 
-
-        # STEP 2: modify config file
-        # 修改配置文件
+        # 第一步：修改配置文件
         with open("./configs/finetune_speaker.json", 'r', encoding='utf-8') as f:
             hps = json.load(f)
-
-        # assign ids to new speakers
         # 分派 id 给说话人
         speaker2id = {}
         for i, speaker in enumerate(speakers):
             speaker2id[speaker] = i
-        # modify n_speakers
         # 修改配置文件中说话人的数量
         hps['data']["n_speakers"] = len(speakers)
-        # overwrite speaker names
-        # 覆盖说话人名字
         hps['speakers'] = speaker2id
         hps['train']['log_interval'] = 10
         hps['train']['eval_interval'] = 100
         hps['train']['batch_size'] = 16
         hps['data']['training_files'] = "final_annotation_train.txt"
         hps['data']['validation_files'] = "final_annotation_val.txt"
-        # save modified config
-        # 保存被修改的配置文件
+
         with open("./configs/modified_finetune_speaker.json", 'w', encoding='utf-8') as f:
             json.dump(hps, f, indent=2)
 
-        # STEP 3: clean annotations, replace speaker names with assigned speaker IDs
-        # 清理标注，用说话人id取代说话人名字
+
+        # 第二步：清理标注，用说话人ID取代说话人名字
         import text
         cleaned_new_annos = []
         for i, line in enumerate(new_annos):
@@ -108,41 +100,42 @@ if __name__ == "__main__":
             cleaned_text = text._clean_text(txt, hps['data']['text_cleaners'])
             cleaned_text += "\n" if not cleaned_text.endswith("\n") else ""
             cleaned_old_annos.append(path + "|" + str(speaker2id[speaker]) + "|" + cleaned_text)
-        # merge with old annotation
+        
+        # 合并新老标注
         final_annos = cleaned_old_annos + cc_duplicate * cleaned_new_annos
-        # save annotation file
+        # 保存训练集标注文件（+辅助数据）
         with open("./final_annotation_train.txt", 'w', encoding='utf-8') as f:
             for line in final_annos:
                 f.write(line)
-        # save annotation file for validation
+        # 保存验证集标注文件（+辅助数据）
         with open("./final_annotation_val.txt", 'w', encoding='utf-8') as f:
             for line in cleaned_new_annos:
                 f.write(line)
         print("finished")
     else:
-        # Do not add extra helper data
-        # STEP 1: modify config file
+        # 不加辅助数据
+        # 第一步：修改配置文件
         with open("./configs/finetune_speaker.json", 'r', encoding='utf-8') as f:
             hps = json.load(f)
 
-        # assign ids to new speakers
+        # 分派id 给新的说话人
         speaker2id = {}
         for i, speaker in enumerate(speakers):
             speaker2id[speaker] = i
-        # modify n_speakers
+        # 修改说话人数量
         hps['data']["n_speakers"] = len(speakers)
-        # overwrite speaker names
         hps['speakers'] = speaker2id
         hps['train']['log_interval'] = 10
         hps['train']['eval_interval'] = 100
         hps['train']['batch_size'] = 16
         hps['data']['training_files'] = "final_annotation_train.txt"
         hps['data']['validation_files'] = "final_annotation_val.txt"
-        # save modified config
+        # 保存超参数设置
         with open("./configs/modified_finetune_speaker.json", 'w', encoding='utf-8') as f:
             json.dump(hps, f, indent=2)
 
-        # STEP 2: clean annotations, replace speaker names with assigned speaker IDs
+
+        # 第二步：清理标注，用ID替代说话人名字
         import text
 
         cleaned_new_annos = []
@@ -155,12 +148,13 @@ if __name__ == "__main__":
             cleaned_new_annos.append(path + "|" + str(speaker2id[speaker]) + "|" + cleaned_text)
 
         final_annos = cleaned_new_annos
-        # save annotation file
+        # 保存训练集标注文件
         with open("./final_annotation_train.txt", 'w', encoding='utf-8') as f:
             for line in final_annos:
                 f.write(line)
-        # save annotation file for validation
+        # 保存验证集标注文件
         with open("./final_annotation_val.txt", 'w', encoding='utf-8') as f:
             for line in cleaned_new_annos:
                 f.write(line)
-        print("finished")
+        
+        print("===== finished =====")

@@ -234,6 +234,7 @@ _bopomofo_to_ipa2 = [(re.compile('%s' % x[0]), x[1]) for x in [
 
 
 def number_to_chinese(text):
+    '''数字转成中文读法'''
     numbers = re.findall(r'\d+(?:\.?\d+)?', text)
     for number in numbers:
         text = text.replace(number, cn2an.an2cn(number), 1)
@@ -241,6 +242,7 @@ def number_to_chinese(text):
 
 
 def chinese_to_bopomofo(text):
+    """汉字切词后转成中文注音符号（ㄅㄆㄇ）"""
     text = text.replace('、', '，').replace('；', '，').replace('：', '，')
     words = jieba.lcut(text, cut_all=False)
     text = ''
@@ -258,24 +260,28 @@ def chinese_to_bopomofo(text):
 
 
 def latin_to_bopomofo(text):
+    """英文字母转成注音符号"""
     for regex, replacement in _latin_to_bopomofo:
         text = re.sub(regex, replacement, text)
     return text
 
 
 def bopomofo_to_romaji(text):
+    """注音符号转罗马音"""
     for regex, replacement in _bopomofo_to_romaji:
         text = re.sub(regex, replacement, text)
     return text
 
 
 def bopomofo_to_ipa(text):
+    """注音符号转罗马音"""
     for regex, replacement in _bopomofo_to_ipa:
         text = re.sub(regex, replacement, text)
     return text
 
 
 def bopomofo_to_ipa2(text):
+    """注音符号转罗马音"""
     for regex, replacement in _bopomofo_to_ipa2:
         text = re.sub(regex, replacement, text)
     return text

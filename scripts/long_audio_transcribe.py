@@ -1,3 +1,9 @@
+"""长音频转录
+1. 使用whipser模型对长音频进行语音识别
+2. 按时间段拆分长音频为多个子片段
+3. 切分音频段保存到./segmented_character_voice/<character_name>/ 目录
+4. 把每段音频片段路径、角色名和文本注释写入 ./long_character_anno.txt
+"""
 from moviepy.editor import AudioFileClip
 import whisper
 import os
@@ -29,6 +35,8 @@ if __name__ == "__main__":
             'zh': "[ZH]",
         }
     assert(torch.cuda.is_available()), "Please enable GPU in order to run Whisper!"
+    
+    # 重采样 & 转录
     with open("./configs/finetune_speaker.json", 'r', encoding='utf-8') as f:
         hps = json.load(f)
     target_sr = hps['data']['sampling_rate']
@@ -87,8 +95,8 @@ if __name__ == "__main__":
             torchaudio.save(savepth, wav_seg, target_sr, channels_first=True)
             
     if len(speaker_annos) == 0:
-        print("Warning: no long audios & videos found, this IS expected if you have only uploaded short audios")
-        print("this IS NOT expected if you have uploaded any long audios, videos or video links. Please check your file structure or make sure your audio/video language is supported.")
+        print("Warning: no long audios & videos found, this iS expected if you have only uploaded short audios")
+        print("this iS not expected if you have uploaded any long audios, videos or video links. Please check your file structure or make sure your audio/video language is supported.")
     with open("./long_character_anno.txt", 'w', encoding='utf-8') as f:
         for line in speaker_annos:
             f.write(line)

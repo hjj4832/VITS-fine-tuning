@@ -17,4 +17,5 @@ def main():
             torchaudio.save("./sampled_audio4ft" + "/" + wavfile, wav, target_sr, channels_first=True)
 
 if __name__ == "__main__":
+    """重采样辅助数据"""
     main()

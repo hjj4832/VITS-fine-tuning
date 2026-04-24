@@ -1,3 +1,6 @@
+"""提取音频的“人声”部分
+调用 demucs --two-stems=vocals 对每个音频文件进行声音分离
+"""
 import os
 import json
 import torchaudio
