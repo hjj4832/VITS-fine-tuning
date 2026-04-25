@@ -335,7 +335,7 @@ def chinese_to_ipa2(text):
 from phonemizer import phonemize
 import os
 
-os.environ["PHONEMIZER_ESPEAK_LIBRARY"] = r"C:\Program Files\eSpeak NG\libespeak-ng.dll"
+# os.environ["PHONEMIZER_ESPEAK_LIBRARY"] = r"C:\Program Files\eSpeak NG\libespeak-ng.dll"
 
 def chinese_to_ipa3(text):
     """

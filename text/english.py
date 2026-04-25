@@ -192,7 +192,7 @@ def english_to_lazy_ipa2(text):
 from phonemizer import phonemize
 import os
 
-os.environ["PHONEMIZER_ESPEAK_LIBRARY"] = r"C:\Program Files\eSpeak NG\libespeak-ng.dll"
+# os.environ["PHONEMIZER_ESPEAK_LIBRARY"] = r"C:\Program Files\eSpeak NG\libespeak-ng.dll"
 
 def english_to_ipa3(text):
     """phonemizer + espeak-ng"""
