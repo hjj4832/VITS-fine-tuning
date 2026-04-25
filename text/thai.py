@@ -1,5 +1,3 @@
-'''泰语文本预处理模块
-'''
 import re
 from num_thai.thainumbers import NumThai
 

@@ -340,6 +340,10 @@ import os
 def chinese_to_ipa3(text):
     """
     使用 phonemizer + espeak-ng 将中文文本转换为 IPA
+        参数：
+            - strip: 是否去掉首尾多余空格
+            - preserve_punctuation: 保留原文本中的标点符号
+            - with_stress: 是否输出英文重音符号
     """
     text = number_to_chinese(text)
 
@@ -350,7 +354,7 @@ def chinese_to_ipa3(text):
         strip=True,
         preserve_punctuation=True,
         with_stress=False,
-        njobs=1
+        njobs=8
     )
 
     text = re.sub(r"\s+", " ", text).strip()

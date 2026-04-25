@@ -21,6 +21,7 @@ ko_pron
 indic_transliteration==2.3.37
 num_thai==0.0.5
 opencc==1.1.1
+phonemizer==3.2.1
 demucs
 git+https://github.com/openai/whisper.git 
 gradio

@@ -20,7 +20,7 @@ if __name__ == "__main__":
     new_annos = []
     
     # 来源1：记录短音频
-    if os.path.exists("short_character_anno.txt"):
+    if os.path.exists("./short_character_anno.txt"):
         with open("short_character_anno.txt", 'r', encoding='utf-8') as f:
             short_character_anno = f.readlines()
             new_annos += short_character_anno
@@ -157,4 +157,4 @@ if __name__ == "__main__":
             for line in cleaned_new_annos:
                 f.write(line)
         
-        print("===== finished =====")
+    print("===== finished =====")
