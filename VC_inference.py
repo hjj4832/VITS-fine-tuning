@@ -28,7 +28,14 @@ language_marks = {
     "Mix": "",
 }
 lang = ['日本語', '简体中文', 'English', 'Mix']
-def get_text(text, hps, is_symbol):
+
+def get_text(text, hps, is_symbol:bool) -> LongTensor:
+    """文本转序列
+        参数：
+            - text: 文本
+            - hps: 超参数
+            - is_symbol: 是否使用文本清理器
+    """
     text_norm = text_to_sequence(text, hps.symbols, [] if is_symbol else hps.data.text_cleaners)
     if hps.data.add_blank:
         text_norm = commons.intersperse(text_norm, 0)
@@ -36,10 +43,15 @@ def get_text(text, hps, is_symbol):
     return text_norm
 
 def create_tts_fn(model, hps, speaker_ids):
+    """TTS回调函数, 绑定模型, 超参数和说话人ID映射"""
     def tts_fn(text, speaker, language, speed):
+        """文本到语音函数, 供Gradio调用
+        """
         if language is not None:
             text = language_marks[language] + text + language_marks[language]
         speaker_id = speaker_ids[speaker]
+        
+        # 文本转模型输入张量
         stn_tst = get_text(text, hps, False)
         with no_grad():
             x_tst = stn_tst.unsqueeze(0).to(device)
@@ -53,6 +65,7 @@ def create_tts_fn(model, hps, speaker_ids):
     return tts_fn
 
 def create_vc_fn(model, hps, speaker_ids):
+    """语音转换回调函数"""
     def vc_fn(original_speaker, target_speaker, record_audio, upload_audio):
         input_audio = record_audio if record_audio is not None else upload_audio
         if input_audio is None:
@@ -83,10 +96,11 @@ def create_vc_fn(model, hps, speaker_ids):
         return "Success", (hps.data.sampling_rate, audio)
 
     return vc_fn
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_dir", default="./G_latest.pth", help="directory to your fine-tuned model")
-    parser.add_argument("--config_dir", default="./finetune_speaker.json", help="directory to your model config file")
+    parser.add_argument("--config_dir", default="./configs/finetune_speaker.json", help="directory to your model config file")
     parser.add_argument("--share", default=False, help="make link public (used in colab)")
 
     args = parser.parse_args()
@@ -114,7 +128,7 @@ if __name__ == "__main__":
                     textbox = gr.TextArea(label="Text",
                                           placeholder="Type your sentence here",
                                           value="こんにちわ。", elem_id=f"tts-input")
-                    # select character
+                    # 选择角色
                     char_dropdown = gr.Dropdown(choices=speakers, value=speakers[0], label='character')
                     language_dropdown = gr.Dropdown(choices=lang, value=lang[0], label='language')
                     duration_slider = gr.Slider(minimum=0.1, maximum=5, value=1, step=0.1,

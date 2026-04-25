@@ -186,3 +186,29 @@ def english_to_lazy_ipa2(text):
     for regex, replacement in _lazy_ipa2:
         text = re.sub(regex, replacement, text)
     return text
+
+
+
+from phonemizer import phonemize
+import os
+
+os.environ["PHONEMIZER_ESPEAK_LIBRARY"] = r"C:\Program Files\eSpeak NG\libespeak-ng.dll"
+
+def english_to_ipa3(text):
+    """phonemizer + espeak-ng"""
+    text = unidecode(text).lower()
+    text = expand_abbreviations(text)
+    text = normalize_numbers(text)
+
+    phonemes = phonemize(
+        text,
+        language="en-us",
+        backend="espeak",
+        strip=True,
+        preserve_punctuation=True,
+        with_stress=True
+    )
+    # 多余空格合并成一个空格
+    phonemes = collapse_whitespace(phonemes)
+
+    return phonemes

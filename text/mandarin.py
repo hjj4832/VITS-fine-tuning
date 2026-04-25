@@ -330,3 +330,28 @@ def chinese_to_ipa2(text):
     text = re.sub(r'([ʂɹ]ʰ?)([˩˨˧˦˥ ]+|$)', r'\1ʅ\2', text)
     text = re.sub(r'(sʰ?)([˩˨˧˦˥ ]+|$)', r'\1ɿ\2', text)
     return text
+
+
+from phonemizer import phonemize
+import os
+
+os.environ["PHONEMIZER_ESPEAK_LIBRARY"] = r"C:\Program Files\eSpeak NG\libespeak-ng.dll"
+
+def chinese_to_ipa3(text):
+    """
+    使用 phonemizer + espeak-ng 将中文文本转换为 IPA
+    """
+    text = number_to_chinese(text)
+
+    text = phonemize(
+        text,
+        language="cmn",
+        backend="espeak",
+        strip=True,
+        preserve_punctuation=True,
+        with_stress=False,
+        njobs=1
+    )
+
+    text = re.sub(r"\s+", " ", text).strip()
+    return text

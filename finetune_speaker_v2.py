@@ -46,7 +46,7 @@ global_step = 0
 
 
 def main():
-  """Assume Single Node Multi GPUs Training Only"""
+  """仅允许单节点多GPU环境"""
   assert torch.cuda.is_available(), "CPU training is not allowed."
 
   n_gpus = torch.cuda.device_count()

@@ -99,7 +99,7 @@ class TextAudioSpeakerLoader(torch.utils.data.Dataset):
             # torch.save(spec, spec_filename)
         return spec, audio_norm
 
-    def get_text(self, text):
+    def get_text(self, text) -> torch.LongTensor:
         if self.cleaned_text:
             text_norm = cleaned_text_to_sequence(text, self.symbols)
         else:
@@ -109,7 +109,8 @@ class TextAudioSpeakerLoader(torch.utils.data.Dataset):
         text_norm = torch.LongTensor(text_norm)
         return text_norm
 
-    def get_sid(self, sid):
+    # 
+    def get_sid(self, sid) -> torch.LongTensor:
         sid = torch.LongTensor([int(sid)])
         return sid
 
