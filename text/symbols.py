@@ -3,9 +3,9 @@ Defines the set of symbols used in text input to the model.
 '''
 
 # japanese_cleaners
-# _pad        = '_'
-# _punctuation = ',.!?-'
-# _letters = 'AEINOQUabdefghijkmnoprstuvwyzʃʧ↓↑ '
+_pad        = '_'
+_punctuation = ',.!?-'
+_letters = 'AEINOQUabdefghijkmnoprstuvwyzʃʧ↓↑ '
 
 
 '''# japanese_cleaners2
@@ -27,11 +27,11 @@ _punctuation = '，。！？—…'
 _letters = 'ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦㄧㄨㄩˉˊˇˋ˙ '
 '''
 
-# # zh_ja_mixture_cleaners
-# _pad        = '_'
-# _punctuation = ',.!?-~…'
-# _letters = 'AEINOQUabdefghijklmnoprstuvwyzʃʧʦɯɹəɥ⁼ʰ`→↓↑ '
-
+'''# zh_ja_mixture_cleaners
+_pad        = '_'
+_punctuation = ',.!?-~…'
+_letters = 'AEINOQUabdefghijklmnoprstuvwyzʃʧʦɯɹəɥ⁼ʰ`→↓↑ '
+'''
 
 '''# sanskrit_cleaners
 _pad        = '_'
@@ -50,13 +50,12 @@ _pad        = '_'
 _punctuation = '.!? '
 _letters = 'กขฃคฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรฤลวศษสหฬอฮฯะัาำิีึืุูเแโใไๅๆ็่้๊๋์'
 '''
-'''
-# # cjke_cleaners2
+
+'''# cjke_cleaners2
 _pad        = '_'
 _punctuation = ',.!?-~…'
 _letters = 'NQabdefghijklmnopstuvwxyzɑæʃʑçɯɪɔɛɹðəɫɥɸʊɾʒθβŋɦ⁼ʰ`^#*=ˈˌ→↓↑ '
 '''
-
 
 '''# shanghainese_cleaners
 _pad        = '_'
@@ -70,15 +69,8 @@ _punctuation = ',.!?~…─'
 _letters = '#Nabdefghijklmnoprstuvwxyzæçøŋœȵɐɑɒɓɔɕɗɘəɚɛɜɣɤɦɪɭɯɵɷɸɻɾɿʂʅʊʋʌʏʑʔʦʮʰʷˀː˥˦˧˨˩̥̩̃̚ᴀᴇ↑↓∅ⱼ '
 '''
 
-# ce_cleaners
-_pad        = '_'
-_punctuation = ';:,.!?¡¿—…"«»“” '
-_letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-_letters_ipa = "ɑɐɒæɓʙβɔɕçɗɖðʤəɘɚɛɜɝɞɟʄɡɠɢʛɦɧħɥʜɨɪʝɭɬɫɮʟɱɯɰŋɳɲɴøɵɸθœɶʘɹɺɾɻʀʁɽʂʃʈʧʉʊʋⱱʌɣɤʍχʎʏʑʐʒʔʡʕʢǀǁǂǃˈˌːˑʼʴʰʱʲʷˠˤ˞↓↑→↗↘'̩'ᵻ"
-
-
 # Export all symbols:
-symbols = [_pad] + list(_punctuation) + list(_letters) + list(_letters_ipa)
+symbols = [_pad] + list(_punctuation) + list(_letters)
 
 # Special symbol ids
 SPACE_ID = symbols.index(" ")

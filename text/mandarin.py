@@ -6,6 +6,9 @@ import jieba
 import cn2an
 import logging
 
+logging.getLogger('jieba').setLevel(logging.WARNING)
+jieba.initialize()
+
 
 # List of (Latin alphabet, bopomofo) pairs:
 _latin_to_bopomofo = [(re.compile('%s' % x[0], re.IGNORECASE), x[1]) for x in [
@@ -234,7 +237,6 @@ _bopomofo_to_ipa2 = [(re.compile('%s' % x[0]), x[1]) for x in [
 
 
 def number_to_chinese(text):
-    '''数字转成中文读法'''
     numbers = re.findall(r'\d+(?:\.?\d+)?', text)
     for number in numbers:
         text = text.replace(number, cn2an.an2cn(number), 1)
@@ -242,7 +244,6 @@ def number_to_chinese(text):
 
 
 def chinese_to_bopomofo(text):
-    """汉字切词后转成中文注音符号（ㄅㄆㄇ）"""
     text = text.replace('、', '，').replace('；', '，').replace('：', '，')
     words = jieba.lcut(text, cut_all=False)
     text = ''
@@ -260,28 +261,24 @@ def chinese_to_bopomofo(text):
 
 
 def latin_to_bopomofo(text):
-    """英文字母转成注音符号"""
     for regex, replacement in _latin_to_bopomofo:
         text = re.sub(regex, replacement, text)
     return text
 
 
 def bopomofo_to_romaji(text):
-    """注音符号转罗马音"""
     for regex, replacement in _bopomofo_to_romaji:
         text = re.sub(regex, replacement, text)
     return text
 
 
 def bopomofo_to_ipa(text):
-    """注音符号转罗马音"""
     for regex, replacement in _bopomofo_to_ipa:
         text = re.sub(regex, replacement, text)
     return text
 
 
 def bopomofo_to_ipa2(text):
-    """注音符号转罗马音"""
     for regex, replacement in _bopomofo_to_ipa2:
         text = re.sub(regex, replacement, text)
     return text
@@ -332,11 +329,6 @@ def chinese_to_ipa2(text):
     return text
 
 
-from phonemizer import phonemize
-import os
-
-# os.environ["PHONEMIZER_ESPEAK_LIBRARY"] = r"C:\Program Files\eSpeak NG\libespeak-ng.dll"
-
 def chinese_to_ipa3(text):
     """
     使用 phonemizer + espeak-ng 将中文文本转换为 IPA
@@ -345,8 +337,10 @@ def chinese_to_ipa3(text):
             - preserve_punctuation: 保留原文本中的标点符号
             - with_stress: 是否输出英文重音符号
     """
+    from phonemizer import phonemize
+    import os
+    # os.environ["PHONEMIZER_ESPEAK_LIBRARY"] = r"C:\Program Files\eSpeak NG\libespeak-ng.dll"
     text = number_to_chinese(text)
-
     text = phonemize(
         text,
         language="cmn",
@@ -354,8 +348,7 @@ def chinese_to_ipa3(text):
         strip=True,
         preserve_punctuation=True,
         with_stress=False,
-        njobs=8
+        njobs=1
     )
-
     text = re.sub(r"\s+", " ", text).strip()
     return text

@@ -159,6 +159,7 @@ def load_checkpoint(checkpoint_path, model, optimizer=None, drop_speaker_emb=Fal
     else:
         state_dict = model.state_dict()
     new_state_dict = {}
+    
     for k, v in state_dict.items():
         try:
             if k == 'emb_g.weight':
@@ -167,6 +168,14 @@ def load_checkpoint(checkpoint_path, model, optimizer=None, drop_speaker_emb=Fal
                     continue
                 v[:saved_state_dict[k].shape[0], :] = saved_state_dict[k]
                 new_state_dict[k] = v
+            elif k == 'enc_p.emb.weight':
+                old_weight = saved_state_dict[k]
+                new_weight = v
+                
+                num_common = min(old_weight.shape[0], new_weight.shape[0])
+                new_weight[:num_common, :] = old_weight[:num_common, :]
+                
+                new_state_dict[k] = new_weight
             else:
                 new_state_dict[k] = saved_state_dict[k]
         except:

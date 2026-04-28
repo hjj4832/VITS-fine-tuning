@@ -188,12 +188,6 @@ def english_to_lazy_ipa2(text):
     return text
 
 
-
-from phonemizer import phonemize
-import os
-
-# os.environ["PHONEMIZER_ESPEAK_LIBRARY"] = r"C:\Program Files\eSpeak NG\libespeak-ng.dll"
-
 def english_to_ipa3(text):
     """
     使用 phonemizer + espeak-ng 将英文文文本转换为 IPA
@@ -202,6 +196,9 @@ def english_to_ipa3(text):
             - preserve_punctuation: 保留原文本中的标点符号
             - with_stress: 是否输出英文重音符号
     """
+    from phonemizer import phonemize
+    import os
+    # os.environ["PHONEMIZER_ESPEAK_LIBRARY"] = r"C:\Program Files\eSpeak NG\libespeak-ng.dll"
     text = unidecode(text).lower()
     text = expand_abbreviations(text)
     text = normalize_numbers(text)
@@ -213,7 +210,7 @@ def english_to_ipa3(text):
         strip=True,
         preserve_punctuation=True,
         with_stress=True,
-        njobs=8
+        njobs=1
     )
     # 多余空格合并成一个空格
     phonemes = collapse_whitespace(phonemes)
