@@ -341,7 +341,7 @@ def chinese_to_ipa3(text):
     import os
     # os.environ["PHONEMIZER_ESPEAK_LIBRARY"] = r"C:\Program Files\eSpeak NG\libespeak-ng.dll"
     text = number_to_chinese(text)
-    text = phonemize(
+    phonemes = phonemize(
         text,
         language="cmn",
         backend="espeak",
@@ -350,5 +350,5 @@ def chinese_to_ipa3(text):
         with_stress=False,
         njobs=1
     )
-    text = re.sub(r"\s+", " ", text).strip()
-    return text
+    phonemes = re.sub(r"\s+", " ", phonemes).strip()
+    return phonemes

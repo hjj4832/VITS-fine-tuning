@@ -141,7 +141,8 @@ class TextEncoder(nn.Module):
       n_heads,
       n_layers,
       kernel_size,
-      p_dropout):
+      p_dropout,
+      n_languages=0):
     super().__init__()
     self.n_vocab = n_vocab
     self.out_channels = out_channels
@@ -151,10 +152,17 @@ class TextEncoder(nn.Module):
     self.n_layers = n_layers
     self.kernel_size = kernel_size
     self.p_dropout = p_dropout
+    self.n_languages = n_languages
 
     self.emb = nn.Embedding(n_vocab, hidden_channels)
     nn.init.normal_(self.emb.weight, 0.0, hidden_channels**-0.5)
-
+    
+    if n_languages > 0:
+      self.lang_emb = nn.Embedding(n_languages, hidden_channels, padding_idx=0)
+      nn.init.normal_(self.lang_emb.weight, 0.0, hidden_channels ** -0.5)
+      with torch.no_grad():
+        self.lang_emb.weight[0].zero_()
+    
     self.encoder = attentions.Encoder(
       hidden_channels,
       filter_channels,
@@ -164,8 +172,29 @@ class TextEncoder(nn.Module):
       p_dropout)
     self.proj= nn.Conv1d(hidden_channels, out_channels * 2, 1)
 
-  def forward(self, x, x_lengths):
-    x = self.emb(x) * math.sqrt(self.hidden_channels) # [b, t, h]
+  def forward(self, x, x_lengths, lang_ids=None):
+    # 先得到文本 embedding
+    x_emb = self.emb(x)  # [B, T, H]
+    
+    if self.n_languages > 0:
+      if lang_ids is None:
+        lang_ids = torch.zeros(
+          x.size(0),
+          x.size(1),
+          dtype=torch.long,
+          device=x.device
+        )
+    
+      # 支持两种形式：
+      # 1. lang_ids: [B]，整句一个语言 ID
+      # 2. lang_ids: [B, T]，每个 token 一个语言 ID，适合中英混合句子
+      if lang_ids.dim() == 1:
+        lang_ids = lang_ids.unsqueeze(1).expand(-1, x.size(1))
+
+      lang_emb = self.lang_emb(lang_ids)
+      x_emb = x_emb + lang_emb
+    
+    x = x_emb * math.sqrt(self.hidden_channels)
     x = torch.transpose(x, 1, -1) # [b, h, t]
     x_mask = torch.unsqueeze(commons.sequence_mask(x_lengths, x.size(2)), 1).to(x.dtype)
 
@@ -412,6 +441,7 @@ class SynthesizerTrn(nn.Module):
     n_speakers=0,
     gin_channels=0,
     use_sdp=True,
+    n_languages=0,
     **kwargs):
 
     super().__init__()
@@ -435,6 +465,7 @@ class SynthesizerTrn(nn.Module):
     self.gin_channels = gin_channels
 
     self.use_sdp = use_sdp
+    self.n_languages = n_languages
 
     self.enc_p = TextEncoder(n_vocab,
         inter_channels,
@@ -443,7 +474,8 @@ class SynthesizerTrn(nn.Module):
         n_heads,
         n_layers,
         kernel_size,
-        p_dropout)
+        p_dropout,
+        n_languages=n_languages)
     self.dec = Generator(inter_channels, resblock, resblock_kernel_sizes, resblock_dilation_sizes, upsample_rates, upsample_initial_channel, upsample_kernel_sizes, gin_channels=gin_channels)
     self.enc_q = PosteriorEncoder(spec_channels, inter_channels, hidden_channels, 5, 1, 16, gin_channels=gin_channels)
     self.flow = ResidualCouplingBlock(inter_channels, hidden_channels, 5, 1, 4, gin_channels=gin_channels)
@@ -456,9 +488,9 @@ class SynthesizerTrn(nn.Module):
     if n_speakers >= 1:
       self.emb_g = nn.Embedding(n_speakers, gin_channels)
 
-  def forward(self, x, x_lengths, y, y_lengths, sid=None):
+  def forward(self, x, x_lengths, y, y_lengths, sid=None, lang_ids=None):
 
-    x, m_p, logs_p, x_mask = self.enc_p(x, x_lengths)
+    x, m_p, logs_p, x_mask = self.enc_p(x, x_lengths, lang_ids)
     if self.n_speakers > 0:
       g = self.emb_g(sid).unsqueeze(-1) # [b, h, 1]
     else:
@@ -496,8 +528,8 @@ class SynthesizerTrn(nn.Module):
     o = self.dec(z_slice, g=g)
     return o, l_length, attn, ids_slice, x_mask, y_mask, (z, z_p, m_p, logs_p, m_q, logs_q)
 
-  def infer(self, x, x_lengths, sid=None, noise_scale=1, length_scale=1, noise_scale_w=1., max_len=None):
-    x, m_p, logs_p, x_mask = self.enc_p(x, x_lengths)
+  def infer(self, x, x_lengths, sid=None, lang_ids=None,noise_scale=1, length_scale=1, noise_scale_w=1., max_len=None):
+    x, m_p, logs_p, x_mask = self.enc_p(x, x_lengths, lang_ids)
     if self.n_speakers > 0:
       g = self.emb_g(sid).unsqueeze(-1) # [b, h, 1]
     else:

@@ -215,4 +215,4 @@ def english_to_ipa3(text):
     # 多余空格合并成一个空格
     phonemes = collapse_whitespace(phonemes)
 
-    return phonemes
+    return phonemes.strip()
